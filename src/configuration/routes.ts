@@ -8,8 +8,13 @@ router.get("/", (_, res) => {
 });
 
 router.get("/properties", async (_, res) => {
-	const properties = await getProperties();
-	res.send(properties);
+	try {
+		const properties = await getProperties();
+		res.send(properties);
+	} catch (error) {
+		console.log(error);
+		res.status(500);
+	}
 });
 
 export default router;
