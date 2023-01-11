@@ -2,6 +2,7 @@ import puppeteer from "puppeteer";
 
 import properties from "../../configuration/parcels";
 import { targets } from "../../configuration/puppeteer-targets";
+import { toCSV } from "./utils/toCSV";
 
 export const getProperties = async () => {
 	const browser = await puppeteer.launch({
@@ -55,18 +56,20 @@ export const getProperties = async () => {
 	// GET TAXES OWED INFORMATION
 	const taxesOwedRows = await page.$$("#Taxes\\ Owed > tbody > tr");
 
-	const taxedOwed: Record<string, string> = {};
+	const taxesOwed: Record<string, string> = {};
 	for (const row of taxesOwedRows) {
 		const cells = await row.$$("td");
 
 		const key = await page.evaluate((el) => el?.textContent, cells[0]);
 		const value = await page.evaluate((el) => el?.textContent, cells[1]);
 
-		if (key?.trim() && value?.trim()) taxedOwed[key] = value;
+		if (key?.trim() && value?.trim()) taxesOwed[key] = value;
 	}
 
 	await page.close();
 	await browser.close();
 
-	return { parcelInformation, taxesSummaryTable, taxedOwed };
+	toCSV([{ parcelInformation, taxesSummaryTable, taxesOwed }]);
+
+	return { parcelInformation, taxesSummaryTable, taxesOwed };
 };
