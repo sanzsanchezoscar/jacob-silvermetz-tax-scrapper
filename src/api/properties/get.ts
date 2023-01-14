@@ -15,14 +15,23 @@ export const getProperties = async () => {
 		waitUntil: "domcontentloaded",
 	});
 
-	await page.removeAllListeners();
-
 	// GET PARCEL INFORMATION
 	const parcelInformation: Record<string, string> = {};
 	for (const key in targets) {
-		const value = await page.waitForXPath(targets[key as keyof typeof targets]);
-		const text = await page.evaluate((el) => el?.textContent, value);
-		if (text) parcelInformation[key] = text.split(":")[1];
+		try {
+			const value = await page.waitForXPath(targets[key as keyof typeof targets], {
+				visible: true,
+				timeout: 1000,
+			});
+			if (value) {
+				const text = await page.evaluate((el) => el?.textContent, value);
+				if (text) parcelInformation[key] = text.split(":")[1];
+			}
+		} catch (error) {
+			console.log(error);
+			parcelInformation[key] = "not-found";
+			continue;
+		}
 	}
 
 	// GET TAXES SUMMARY INFORMATION
